@@ -28,3 +28,10 @@ doc-gpt = "doc_gpt.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["doc_gpt*"]
+
+[project.authors]
+name = "ShinChven"
+email = "shinchven@gmail.com"
+
+[project.urls]
+homepage = "https://github.com/ShinChven/doc-gpt.git"
