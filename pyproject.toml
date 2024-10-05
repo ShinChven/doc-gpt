@@ -16,13 +16,13 @@ authors = [
     {name = "ShinChven", email = "shinchven@gmail.com"}
 ]
 dependencies = [
-    "click>=8.0",
-    "openai>=0.27",
-    "requests>=2.25",
-    "python-docx>=0.8",
-    "PyPDF2>=2.0",
-    "markdown>=3.3",
-    "python-pptx>=0.6",
+    "click",
+    "openai",
+    "requests",
+    "python-docx",
+    "PyPDF2",
+    "markdown",
+    "python-pptx",
 ]
 
 [project.scripts]
