@@ -1,6 +1,6 @@
 import click
 from pathlib import Path
-from .config import update_config, get_config, set_default_model 
+from .config import update_config, get_config, set_default_model, save_config
 from .ai_client import AIClient
 from .utils import process_input, write_output
 
@@ -31,6 +31,50 @@ def set_default(alias):
         set_default_model(alias)
     except click.ClickException as e:
         click.echo(str(e), err=True)
+
+@main.command()
+@click.argument('alias')
+def delete_config(alias):
+    """Delete a model configuration by alias."""
+    config = get_config()
+    if alias in config['models']:
+        model_config = config['models'][alias]
+
+        # Mask the API key
+        masked_key = model_config['key'][:2] + "*" * (len(model_config['key']) - 4) + model_config['key'][-2:]
+
+        click.echo(f"Configuration for alias '{alias}':")
+        click.echo(f"  Model Name: {model_config['model_name']}")
+        click.echo(f"  Provider: {model_config['provider']}")
+        click.echo(f"  API Key: {masked_key}")
+        click.echo(f"  API Base: {model_config['api_base']}")
+
+        if click.confirm("Are you sure you want to delete this configuration?"):
+            del config['models'][alias]
+            save_config(config)
+            click.echo(f"Configuration for alias '{alias}' has been deleted.")
+        else:
+            click.echo("Deletion cancelled.")
+    else:
+        click.echo(f"Error: No configuration found for alias '{alias}'", err=True)
+
+@main.command()
+def show_models():
+    """Show all models with their provider and masked key."""
+    config = get_config()
+    if not config['models']:
+        click.echo("No models configured.", err=True)
+        return
+
+    click.echo("Configured models:")
+    for alias, model_config in config['models'].items():
+        masked_key = model_config['key'][:2] + "*" * (len(model_config['key']) - 4) + model_config['key'][-2:]
+        click.echo(f"- Alias: {alias}")
+        click.echo(f"  Model Name: {model_config['model_name']}")
+        click.echo(f"  Provider: {model_config['provider']}")
+        click.echo(f"  API Key: {masked_key}")
+        click.echo(f"  API Base: {model_config['api_base']}")
+        click.echo("")  # Blank line for better readability
 
 def process_task(input_file, output_file, model_alias, prompt_file, instructions_file):
     try:
