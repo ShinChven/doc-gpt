@@ -12,6 +12,9 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+authors = [
+    {name = "ShinChven", email = "shinchven@gmail.com"}
+]
 dependencies = [
     "click>=8.0",
     "openai>=0.27",
@@ -28,11 +31,6 @@ doc-gpt = "doc_gpt.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["doc_gpt*"]
-
-[project.authors]
-authors = [
-    {name = "ShinChven", email = "shinchven@gmail.com"}
-]
 
 [project.urls]
 homepage = "https://github.com/ShinChven/doc-gpt.git"
