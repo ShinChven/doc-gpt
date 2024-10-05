@@ -86,6 +86,8 @@ def write_output(content, output, input_file):
     print(f"Output written to {output}")
 
 def process_task(input_file, output_file, model_alias, prompt_file, instructions_file):
+    print(f"Processing task for {input_file}")
+
     try:
         client = AIClient(get_config())
         input_text = process_input(input_file)

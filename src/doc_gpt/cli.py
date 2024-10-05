@@ -1,8 +1,7 @@
 import click
 from pathlib import Path
-from .config import update_config, get_config, set_default_model, save_config
-from .ai_client import AIClient
-from .utils import process_input, write_output
+from .config import config_command, set_default_model, delete_config_command, show_models_command 
+from .utils import process_task
 
 @click.group()
 def main():
@@ -16,12 +15,7 @@ def main():
 @click.option('-b', '--api_base', help='API base URL')
 def config(alias, model_name, provider, key, api_base):
     """Configure a new model or update an existing one."""
-    try:
-        update_config(alias, model_name, provider, key, api_base)
-    except click.Abort:
-        click.echo("Configuration cancelled.")
-    except Exception as e:
-        click.echo(f"Error updating configuration: {str(e)}", err=True)
+    config_command(alias, model_name, provider, key, api_base)
 
 @main.command()
 @click.argument('alias')
@@ -36,92 +30,14 @@ def set_default(alias):
 @click.argument('alias')
 def delete_config(alias):
     """Delete a model configuration by alias."""
-    config = get_config()
-    if alias in config['models']:
-        model_config = config['models'][alias]
-
-        # Mask the API key
-        masked_key = model_config['key'][:2] + "*" * (len(model_config['key']) - 4) + model_config['key'][-2:]
-
-        click.echo(f"Configuration for alias '{alias}':")
-        click.echo(f"  Model Name: {model_config['model_name']}")
-        click.echo(f"  Provider: {model_config['provider']}")
-        click.echo(f"  API Key: {masked_key}")
-        click.echo(f"  API Base: {model_config['api_base']}")
-
-        if click.confirm("Are you sure you want to delete this configuration?"):
-            del config['models'][alias]
-            save_config(config)
-            click.echo(f"Configuration for alias '{alias}' has been deleted.")
-        else:
-            click.echo("Deletion cancelled.")
-    else:
-        click.echo(f"Error: No configuration found for alias '{alias}'", err=True)
+    delete_config_command(alias)
 
 @main.command()
 def show_models():
     """Show all models with their provider and masked key."""
-    config = get_config()
-    if not config['models']:
-        click.echo("No models configured.", err=True)
-        return
+    show_models_command()
 
-    click.echo("Configured models:")
-    for alias, model_config in config['models'].items():
-        masked_key = model_config['key'][:2] + "*" * (len(model_config['key']) - 4) + model_config['key'][-2:]
-        click.echo(f"- Alias: {alias}")
-        click.echo(f"  Model Name: {model_config['model_name']}")
-        click.echo(f"  Provider: {model_config['provider']}")
-        click.echo(f"  API Key: {masked_key}")
-        click.echo(f"  API Base: {model_config['api_base']}")
-        click.echo("")  # Blank line for better readability
 
-def process_task(input_file, output_file, model_alias, prompt_file, instructions_file):
-    try:
-        client = AIClient(get_config())
-        input_text = process_input(input_file)
-
-        if prompt_file:
-            prompt = process_input(prompt_file)
-        else:
-            default_prompt_file = Path.cwd() / 'prompt.md'
-            if default_prompt_file.exists():
-                prompt = process_input(default_prompt_file)
-            else:
-                prompt = click.prompt("Enter your prompt", type=str)
-
-        if not prompt.strip():
-            raise click.UsageError("Prompt cannot be empty")
-
-        instructions = ""
-        if instructions_file:
-            instructions = process_input(instructions_file)
-        else:
-            default_instructions_file = Path.cwd() / 'instructions.md'
-            if default_instructions_file.exists():
-                instructions = process_input(default_instructions_file)
-
-        messages = []
-        if instructions:
-            messages.append({"role": "system", "content": instructions})
-
-        message = """
-<ProvidedDocument>
-[document]
-</ProvidedDocument>
-
-[prompt]
-""".replace("[document]", input_text).replace("[prompt]", prompt)
-        messages.append({"role": "user", "content": message})
-        response = client.request(messages, model_alias)
-        write_output(response, output_file, input_file)
-        click.echo("Content generation completed successfully.")
-    except click.UsageError as e:
-        click.echo(f"Usage error: {str(e)}", err=True)
-    except click.ClickException as e:
-        click.echo(str(e), err=True)
-    except Exception as e:
-        click.echo(f"An error occurred: {str(e)}", err=True)
 
 @main.command()
 @click.option('-i', '--input', 'input_path', required=True, help='Input file or directory')
