@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "doc-gpt"
+version = "0.1.0"
+description = "A CLI tool to process document files using Large Language Models"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "click>=8.0",
+    "openai>=0.27",
+    "requests>=2.25",
+    "python-docx>=0.8",
+    "PyPDF2>=2.0",
+    "markdown>=3.3",
+    "python-pptx>=0.6",
+]
+
+[project.scripts]
+doc-gpt = "doc_gpt.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["doc_gpt*"]
