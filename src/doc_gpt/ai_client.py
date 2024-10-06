@@ -1,5 +1,6 @@
 from openai import OpenAI, AzureOpenAI
 import requests
+import anthropic
 
 class AIClient:
     def __init__(self, config):
@@ -28,6 +29,8 @@ class AIClient:
             return self._azure_openai_request(messages, model_config)
         elif provider == 'ollama':
             return self._ollama_request(messages, model_config)
+        elif provider == 'claude':
+            return self._claude_request(messages, model_config)
         else:
             raise ValueError(f"Unsupported provider: {provider}")
 
@@ -85,3 +88,19 @@ class AIClient:
         )
         response.raise_for_status()
         return response.json()['message']['content']
+
+    def _claude_request(self, messages, model_config):
+        if 'key' not in model_config or not model_config['key']:
+            raise ValueError("API key not provided for Claude")
+
+        client = anthropic.Anthropic(api_key=model_config['key'])
+        
+        # Convert messages to Anthropic's format
+        anthropic_messages = [{"role": msg["role"], "content": msg["content"]} for msg in messages]
+        
+        response = client.messages.create(
+            model=model_config['model_name'],
+            max_tokens=model_config.get('max_tokens', 1024),
+            messages=anthropic_messages
+        )
+        return response.content

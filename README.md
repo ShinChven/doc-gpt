@@ -5,7 +5,7 @@ doc-gpt is a powerful Python CLI tool designed to process document files (PDF, D
 ## Features
 
 - Support for multiple file types: PDF, DOCX, PPTX, TXT, MD
-- Configurable model settings with multiple providers (e.g., OpenAI, Ollama)
+- Configurable model settings with multiple providers (e.g., OpenAI, Azure OpenAI, Ollama, Claude)
 - Batch processing of files with customizable batch size
 - Flexible input options: process single files or entire directories
 - Customizable prompts and system instructions
@@ -38,10 +38,10 @@ doc-gpt config --alias MODEL_ALIAS --model_name MODEL_NAME --provider PROVIDER -
 ```
 
 - `--alias`: A unique name for the model configuration
-- `--model_name`: The name of the model (e.g., "gpt-4")
-- `--provider`: The provider of the model (e.g., "openai" or "ollama")
+- `--model_name`: The name of the model (e.g., "gpt-4" for OpenAI, "claude-3-sonnet-20240229" for Claude)
+- `--provider`: The provider of the model (e.g., "openai", "azure-openai", "ollama", or "claude")
 - `--key`: The API key (optional, depending on the provider)
-- `--api_base`: The API base URL (optional)
+- `--api_base`: The API base URL (optional, defaults to https://api.anthropic.com for Claude)
 
 If you don't provide all options, you'll be prompted to enter the missing information.
 
