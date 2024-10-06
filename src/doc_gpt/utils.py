@@ -85,8 +85,8 @@ def write_output(content, output, input_file):
     
     print(f"Output written to {output}")
 
-def process_task(input_file, output_file, model_alias, prompt_file, instructions_file):
-    print(f"Processing task for {input_file}")
+def process_task(input_file, output_file, model_alias, prompt_file, instructions_file, write_prompt=False):
+    print(f"Processing {input_file} using model '{model_alias}'")
 
     try:
         client = AIClient(get_config())
@@ -125,7 +125,18 @@ def process_task(input_file, output_file, model_alias, prompt_file, instructions
 """.replace("[document]", input_text).replace("[prompt]", prompt)
         messages.append({"role": "user", "content": message})
         response = client.request(messages, model_alias)
-        write_output(response, output_file, input_file)
+
+        # Decide what to write based on the write_prompt flag
+        if write_prompt:
+            formatted_prompt = "\n".join(
+                f"**Role:** {m['role']}\n**Content:**\n{m['content']}\n"
+                for m in messages
+            )
+            combined_content = f"# Prompt:\n{formatted_prompt}\n\n# Response:\n{response}\n"
+            write_output(combined_content, output_file, input_file)
+        else:
+            write_output(response, output_file, input_file)
+
         click.echo("Content generation completed successfully.")
     except click.UsageError as e:
         click.echo(f"Usage error: {str(e)}", err=True)

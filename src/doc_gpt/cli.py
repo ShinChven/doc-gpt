@@ -66,11 +66,17 @@ def show_models():
     type=int,
     help="Number of tasks to run asynchronously (default is 1)",
 )
-def g(input_path, output_file, model_alias, prompt_file, instructions_file, batch_size):
+@click.option(
+    "-wp",
+    "--write_prompt",
+    is_flag=True,
+    help="Include prompt in the saved response"
+)
+def g(input_path, output_file, model_alias, prompt_file, instructions_file, batch_size, write_prompt):
     """Generate content using the specified model and input."""
 
     def process_file(file):
-        process_task(file, output_file, model_alias, prompt_file, instructions_file)
+        process_task(file, output_file, model_alias, prompt_file, instructions_file, write_prompt)
 
     try:
         path = Path(input_path)

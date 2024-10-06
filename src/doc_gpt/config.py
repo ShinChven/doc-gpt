@@ -18,8 +18,8 @@ def get_config():
     with open(CONFIG_FILE, 'r') as f:
         return json.load(f)
 
-def select_from_list(options):
-    selected_index = [0]
+def select_from_list(options, default_index=0):
+    selected_index = [default_index]
     
     def get_formatted_options():
         return [
@@ -109,8 +109,9 @@ def set_default_model(alias):
         available_aliases = list(config['models'].keys())
         if not available_aliases:
             raise click.ClickException("No models available to set as default.")
+        default_index = available_aliases.index(config['default_model']) if config['default_model'] in available_aliases else 0
         print("Select a model alias to set as default (use up/down arrows and press Enter to select):")
-        alias = select_from_list(available_aliases)
+        alias = select_from_list(available_aliases, default_index=default_index)
 
     if alias not in config['models']:
         raise click.ClickException(f"Error: Model alias '{alias}' not found in configuration.")
