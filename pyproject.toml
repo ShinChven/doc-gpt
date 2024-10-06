@@ -23,6 +23,7 @@ dependencies = [
     "PyPDF2",
     "markdown",
     "python-pptx",
+    "prompt_toolkit",
 ]
 
 [project.scripts]
