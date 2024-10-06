@@ -86,8 +86,6 @@ def write_output(content, output, input_file):
     print(f"Output written to {output}")
 
 def process_task(input_file, output_file, model_alias, prompt_file, instructions_file, write_prompt=False):
-    print(f"Processing {input_file} using model '{model_alias}'")
-
     try:
         client = AIClient(get_config())
         input_text = process_input(input_file)
@@ -124,6 +122,7 @@ def process_task(input_file, output_file, model_alias, prompt_file, instructions
 [prompt]
 """.replace("[document]", input_text).replace("[prompt]", prompt)
         messages.append({"role": "user", "content": message})
+        print(f'Processing: "{input_file}"')
         response = client.request(messages, model_alias)
 
         # Decide what to write based on the write_prompt flag
