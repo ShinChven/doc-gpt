@@ -9,6 +9,7 @@ doc-gpt is a powerful Python CLI tool designed to process document files (PDF, D
 - Batch processing of files with customizable batch size
 - Flexible input options: process single files or entire directories
 - Customizable prompts and system instructions
+- **Automatic loading of default prompt from prompt.md in the current working directory**
 
 ## Installation
 
@@ -70,20 +71,23 @@ doc-gpt show-models
 
 ### Generating Content
 
-To generate content using a configured model:
+To generate content with a configured model, use the following command:
 
-```bash
-doc-gpt g --input INPUT_PATH --output OUTPUT_FILE --model_alias MODEL_ALIAS --prompt PROMPT_FILE --instructions INSTRUCTIONS_FILE --batch_size BATCH_SIZE
+```
+doc-gpt g --input <INPUT_PATH> --output <OUTPUT_FILE> --model_alias <MODEL_ALIAS> --prompt <PROMPT_FILE> --instructions <INSTRUCTIONS_FILE> --batch_size <BATCH_SIZE>
 ```
 
-- `--input` or `-i`: Path to the input file or directory (required)
-- `--output` or `-o`: Path to the output file (optional, default: input_file_name.doc-gpt.md)
-- `--model_alias` or `-m`: The alias of the model to use (optional, uses default if not specified)
-- `--prompt` or `-p`: Path to a file containing the prompt (optional)
-- `--instructions` or `-s`: Path to a file containing system instructions (optional)
-- `--batch_size` or `-b`: Number of tasks to run asynchronously (default is 1)
+- `--input` or `-i`: Specify the path to the input file or directory (mandatory)
+- `--output` or `-o`: Designate the path for the output file (optional, default: input_file_name.doc-gpt.md)
+- `--model_alias` or `-m`: Indicate the alias for the model (optional, defaults to the pre-set model)
+- `--prompt` or `-p`: Provide the path to the prompt file (optional)
+- `--instructions` or `-s`: Specify the path to the system instructions file (optional)
+- `--batch_size` or `-b`: Define the number of tasks to process concurrently (default is 1)
 
-If a prompt file is not provided, you'll be prompted to enter the prompt manually.
+**Important: Default Prompt Loading**
+If a prompt file is not provided using the `--prompt` option, doc-gpt will automatically look for a file named `prompt.md` in the current working directory and use it as the default prompt. This feature allows you to maintain a consistent prompt across multiple runs without explicitly specifying it each time.
+
+If neither a prompt file is provided nor a `prompt.md` file exists in the current working directory, you'll be prompted to enter the prompt manually.
 
 ## Supported File Types
 
