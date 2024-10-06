@@ -192,7 +192,7 @@ def show_models_command():
         click.echo("No models configured.", err=True)
         return
 
-    click.echo("Configured models:")
+    click.echo("Configured models:\n")
     for alias, model_config in config['models'].items():
         masked_key = model_config['key'][:2] + "*" * (len(model_config['key']) - 4) + model_config['key'][-2:]
         click.echo(f"- Alias: {alias}")
