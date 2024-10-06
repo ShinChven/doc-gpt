@@ -1,6 +1,16 @@
 import json
 import click
 from pathlib import Path
+from prompt_toolkit import prompt
+from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.shortcuts import PromptSession
+from prompt_toolkit.application import Application
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.layout.containers import Window
+from prompt_toolkit.layout.controls import FormattedTextControl
+from prompt_toolkit.layout.layout import Layout
+
+
 
 CONFIG_FILE = Path.home() / '.doc-gpt' / 'config.json'
 
@@ -10,26 +20,71 @@ def get_config():
     with open(CONFIG_FILE, 'r') as f:
         return json.load(f)
 
+def select_from_list(options):
+    selected_index = [0]
+    
+    def get_formatted_options():
+        return [
+            ("", f"{' > ' if i == selected_index[0] else '   '}{option}\n")
+            for i, option in enumerate(options)
+        ]
+
+    kb = KeyBindings()
+
+    @kb.add('up')
+    def _(event):
+        selected_index[0] = (selected_index[0] - 1) % len(options)
+
+    @kb.add('down')
+    def _(event):
+        selected_index[0] = (selected_index[0] + 1) % len(options)
+
+    @kb.add('enter')
+    def _(event):
+        event.app.exit(result=options[selected_index[0]])
+
+    text_control = FormattedTextControl(get_formatted_options)
+    window = Window(content=text_control)
+    layout = Layout(window)
+
+    application = Application(
+        layout=layout,
+        key_bindings=kb,
+        mouse_support=True,
+        full_screen=False,
+    )
+
+    result = application.run()
+    return result
+
 def update_config(alias, model_name, provider, key, api_base):
     config = get_config()
     
     if not alias:
-        alias = click.prompt("Enter model alias")
+        alias = prompt("Enter model alias: ")
+    
+    if not provider:
+        provider_options = ['openai', 'azure-openai', 'ollama']
+        print("Select provider (use up/down arrows and press Enter to select):")
+        provider = select_from_list(provider_options)
+        print(f"Selected provider: {provider}")
+
     if not model_name:
         if provider == 'azure-openai':
-            model_name = click.prompt("Enter model name with Azure deployment")
+            model_name = prompt("Enter model name with Azure deployment: ")
         else:
-            model_name = click.prompt("Enter model name")
-    if not provider:
-        provider = click.prompt("Enter provider (openai, azure-openai, ollama)")
+            model_name = prompt("Enter model name: ")
+    
     if key is None:
-        key = click.prompt("Enter API key (optional)", default="")
+        key = prompt("Enter API key (optional, press Enter to skip): ", default="")
+    
     if api_base is None:
-        api_base = click.prompt("Enter API base URL (optional)", default="")
+        api_base = prompt("Enter API base URL (optional, press Enter to skip): ", default="")
     
     if alias in config['models']:
-        if not click.confirm(f"Model alias '{alias}' already exists. Do you want to overwrite it?"):
-            click.echo("Configuration update cancelled.")
+        overwrite = prompt(f"Model alias '{alias}' already exists. Do you want to overwrite it? (y/n): ").lower()
+        if overwrite != 'y':
+            print("Configuration update cancelled.")
             return
     
     config['models'][alias] = {
@@ -43,7 +98,12 @@ def update_config(alias, model_name, provider, key, api_base):
         config['default_model'] = alias
     
     save_config(config)
-    click.echo(f"Configuration updated for model alias '{alias}'")
+    
+    set_default = prompt("Do you want to set this model as default? (y/N): ").lower()
+    if set_default == 'y':
+        set_default_model(alias)
+    
+    print(f"Configuration updated for model alias '{alias}'")
 
 def set_default_model(alias):
     config = get_config()
