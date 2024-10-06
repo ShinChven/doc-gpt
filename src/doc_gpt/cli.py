@@ -72,11 +72,18 @@ def show_models():
     is_flag=True,
     help="Include prompt in the saved response"
 )
-def g(input_path, output_file, model_alias, prompt_file, instructions_file, batch_size, write_prompt):
+@click.option(
+    "-mt",
+    "--max_tokens",
+    default=None,
+    type=int,
+    help="Max output tokens for all supported provider's requests (default is None)"
+)
+def g(input_path, output_file, model_alias, prompt_file, instructions_file, batch_size, write_prompt, max_tokens):
     """Generate content using the specified model and input."""
 
     def process_file(file):
-        process_task(file, output_file, model_alias, prompt_file, instructions_file, write_prompt)
+        process_task(file, output_file, model_alias, prompt_file, instructions_file, write_prompt, max_tokens)
 
     try:
         path = Path(input_path)

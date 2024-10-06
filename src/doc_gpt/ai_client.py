@@ -7,7 +7,7 @@ class AIClient:
     def __init__(self, config):
         self.config = config
 
-    def request(self, messages, model_alias=None):
+    def request(self, messages, model_alias=None, max_tokens=None):
         if not model_alias:
             model_alias = self.config.get('default_model')
             if not model_alias:
@@ -25,19 +25,19 @@ class AIClient:
         print(f"Requesting content from model '{model_alias}' using provider '{provider}'")
 
         if provider == 'openai':
-            return self._openai_request(messages, model_config)
+            return self._openai_request(messages, model_config, max_tokens)
         elif provider == 'azure-openai':
-            return self._azure_openai_request(messages, model_config)
+            return self._azure_openai_request(messages, model_config, max_tokens)
         elif provider == 'ollama':
-            return self._ollama_request(messages, model_config)
+            return self._ollama_request(messages, model_config, max_tokens)
         elif provider == 'claude':
-            return self._claude_request(messages, model_config)
+            return self._claude_request(messages, model_config, max_tokens)
         elif provider == 'google-generativeai':
-            return self._google_generativeai_request(messages, model_config)
+            return self._google_generativeai_request(messages, model_config, max_tokens)
         else:
             raise ValueError(f"Unsupported provider: {provider}")
 
-    def _openai_request(self, messages, model_config):
+    def _openai_request(self, messages, model_config, max_tokens):
         if 'key' not in model_config or not model_config['key']:
             raise ValueError("API key not provided for OpenAI")
         
@@ -49,10 +49,11 @@ class AIClient:
         response = openAIClient.chat.completions.create(
                 model=model_config['model_name'],
                 messages=messages,
-                stream=False)
+                stream=False,
+                max_tokens=max_tokens)
         return response.choices[0].message.content
 
-    def _azure_openai_request(self, messages, model_config):
+    def _azure_openai_request(self, messages, model_config, max_tokens):
         if 'key' not in model_config or not model_config['key']:
             raise ValueError("API key not provided for Azure OpenAI")
         
@@ -71,28 +72,30 @@ class AIClient:
         response = azureOpenAIClient.chat.completions.create(
             model=model_config['model_name'],
             messages=messages,
-            stream=False
+            stream=False,
+            max_tokens=max_tokens
         )
         return response.choices[0].message.content
 
-    def _ollama_request(self, messages, model_config):
+    def _ollama_request(self, messages, model_config, max_tokens):
         api_base = model_config.get('api_base')
         if not api_base:
             api_base = 'http://localhost:11434'
         api_base += '/api/chat'
 
-        response = requests.post(
-            api_base,
-            json={
-                "model": model_config['model_name'],
-                "messages": messages,
-                "stream": False
-            }
-        )
+        request_data = {
+            "model": model_config['model_name'],
+            "messages": messages,
+            "stream": False
+        }
+        if max_tokens:
+            request_data["options"] = {"num_predict": max_tokens}
+
+        response = requests.post(api_base, json=request_data)
         response.raise_for_status()
         return response.json()['message']['content']
 
-    def _claude_request(self, messages, model_config):
+    def _claude_request(self, messages, model_config, max_tokens):
         if 'key' not in model_config or not model_config['key']:
             raise ValueError("API key not provided for Claude")
 
@@ -103,12 +106,12 @@ class AIClient:
         
         response = client.messages.create(
             model=model_config['model_name'],
-            max_tokens=model_config.get('max_tokens', 1024),
+            max_tokens=max_tokens or model_config.get('max_tokens', 1024),
             messages=anthropic_messages
         )
         return response.content
 
-    def _google_generativeai_request(self, messages, model_config):
+    def _google_generativeai_request(self, messages, model_config, max_tokens):
         if 'key' not in model_config or not model_config['key']:
             raise ValueError("API key not provided for Google Generative AI")
 
@@ -118,5 +121,9 @@ class AIClient:
         # Convert messages to a single prompt string
         prompt = "\n".join([f"{msg['role']}: {msg['content']}" for msg in messages])
 
-        response = model.generate_content(prompt)
+        generation_config = {}
+        if max_tokens:
+            generation_config['max_output_tokens'] = max_tokens
+
+        response = model.generate_content(prompt, generation_config=generation_config)
         return response.text
