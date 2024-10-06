@@ -5,7 +5,7 @@ doc-gpt is a powerful Python CLI tool designed to process document files (PDF, D
 ## Features
 
 - Support for multiple file types: PDF, DOCX, PPTX, TXT, MD
-- Configurable model settings with multiple providers (e.g., OpenAI, Azure OpenAI, Ollama, Claude)
+- Configurable model settings with multiple providers (e.g., OpenAI, Azure OpenAI, Ollama, Claude, Google Generative AI)
 - Batch processing of files with customizable batch size
 - Flexible input options: process single files or entire directories
 - Customizable prompts and system instructions
@@ -38,8 +38,8 @@ doc-gpt config --alias MODEL_ALIAS --model_name MODEL_NAME --provider PROVIDER -
 ```
 
 - `--alias`: A unique name for the model configuration
-- `--model_name`: The name of the model (e.g., "gpt-4" for OpenAI, "claude-3-sonnet-20240229" for Claude)
-- `--provider`: The provider of the model (e.g., "openai", "azure-openai", "ollama", or "claude")
+- `--model_name`: The name of the model (e.g., "gpt-4" for OpenAI, "claude-3-sonnet-20240229" for Claude, "gemini-1.5-pro" for Google Generative AI)
+- `--provider`: The provider of the model (e.g., "openai", "azure-openai", "ollama", "claude", or "google-generativeai")
 - `--key`: The API key (optional, depending on the provider)
 - `--api_base`: The API base URL (optional, defaults to https://api.anthropic.com for Claude)
 
@@ -107,6 +107,17 @@ doc-gpt supports batch processing of files, allowing you to process multiple fil
 ## Configuration
 
 doc-gpt stores its configuration in `~/.doc-gpt/config.json`. You can manually edit this file if needed, but it's recommended to use the `config` command to manage your configurations.
+
+## Supported Providers
+
+doc-gpt now supports the following providers:
+1. OpenAI
+2. Azure OpenAI
+3. Ollama
+4. Claude (Anthropic)
+5. Google Generative AI
+
+Each provider may have specific requirements for model names and API configurations. When configuring a new model, make sure to use the correct provider name and follow any provider-specific instructions.
 
 ## Error Handling
 

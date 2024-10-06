@@ -62,7 +62,7 @@ def update_config(alias, model_name, provider, key, api_base):
         alias = prompt("Enter model alias: ")
     
     if not provider:
-        provider_options = ['openai', 'azure-openai', 'ollama', 'claude']
+        provider_options = ['openai', 'azure-openai', 'ollama', 'claude', 'google-generativeai']
         print("Select provider (use up/down arrows and press Enter to select):")
         provider = select_from_list(provider_options)
         print(f"Selected provider: {provider}")
@@ -72,6 +72,8 @@ def update_config(alias, model_name, provider, key, api_base):
             model_name = prompt("Enter model name with Azure deployment: ")
         elif provider == 'claude':
             model_name = prompt("Enter Claude model name (e.g., claude-3-sonnet-20240229): ")
+        elif provider == 'google-generativeai':
+            model_name = prompt("Enter Google Generative AI model name (e.g., gemini-1.5-pro): ")
         else:
             model_name = prompt("Enter model name: ")
     
@@ -81,6 +83,8 @@ def update_config(alias, model_name, provider, key, api_base):
     if api_base is None:
         if provider == 'claude':
             api_base = prompt("Enter API base URL (optional, default is https://api.anthropic.com): ", default="https://api.anthropic.com")
+        elif provider == 'google-generativeai':
+            api_base = prompt("Enter API base URL (optional, press Enter to skip): ", default="")
         else:
             api_base = prompt("Enter API base URL (optional, press Enter to skip): ", default="")
     

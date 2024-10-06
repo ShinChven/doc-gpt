@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "doc-gpt"
-version = "0.5.0"
+version = "0.6.0"
 description = "A CLI tool to process document files using Large Language Models"
 requires-python = ">=3.7"
 classifiers = [
@@ -25,6 +25,7 @@ dependencies = [
     "markdown",
     "python-pptx",
     "prompt_toolkit",
+    "google-generativeai",
 ]
 
 [project.scripts]

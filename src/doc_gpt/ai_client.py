@@ -1,6 +1,7 @@
 from openai import OpenAI, AzureOpenAI
 import requests
 import anthropic
+import google.generativeai as genai
 
 class AIClient:
     def __init__(self, config):
@@ -31,6 +32,8 @@ class AIClient:
             return self._ollama_request(messages, model_config)
         elif provider == 'claude':
             return self._claude_request(messages, model_config)
+        elif provider == 'google-generativeai':
+            return self._google_generativeai_request(messages, model_config)
         else:
             raise ValueError(f"Unsupported provider: {provider}")
 
@@ -104,3 +107,16 @@ class AIClient:
             messages=anthropic_messages
         )
         return response.content
+
+    def _google_generativeai_request(self, messages, model_config):
+        if 'key' not in model_config or not model_config['key']:
+            raise ValueError("API key not provided for Google Generative AI")
+
+        genai.configure(api_key=model_config['key'])
+        model = genai.GenerativeModel(model_config['model_name'])
+
+        # Convert messages to a single prompt string
+        prompt = "\n".join([f"{msg['role']}: {msg['content']}" for msg in messages])
+
+        response = model.generate_content(prompt)
+        return response.text
