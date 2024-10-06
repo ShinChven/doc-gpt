@@ -10,7 +10,7 @@ def get_config():
     with open(CONFIG_FILE, 'r') as f:
         return json.load(f)
 
-def update_config(alias, model_name, provider, key, api_base):
+def update_config(alias, model_name, provider, key, api_base, azure_deployment=None):
     config = get_config()
     
     if not alias:
@@ -18,11 +18,13 @@ def update_config(alias, model_name, provider, key, api_base):
     if not model_name:
         model_name = click.prompt("Enter model name")
     if not provider:
-        provider = click.prompt("Enter provider")
+        provider = click.prompt("Enter provider (openai, azure-openai, ollama)")
     if key is None:
         key = click.prompt("Enter API key (optional)", default="")
     if api_base is None:
         api_base = click.prompt("Enter API base URL (optional)", default="")
+    if provider == 'azure-openai' and azure_deployment is None:
+        azure_deployment = click.prompt("Enter Azure deployment name", default="")
     
     if alias in config['models']:
         if not click.confirm(f"Model alias '{alias}' already exists. Do you want to overwrite it?"):
@@ -35,6 +37,9 @@ def update_config(alias, model_name, provider, key, api_base):
         "key": key,
         "api_base": api_base
     }
+    
+    if provider == 'azure-openai':
+        config['models'][alias]["azure_deployment"] = azure_deployment
     
     if not config['default_model']:
         config['default_model'] = alias
@@ -69,10 +74,10 @@ def get_model_config(model_alias=None):
     
     return config['models'][model_alias]
 
-def config_command(alias, model_name, provider, key, api_base):
+def config_command(alias, model_name, provider, key, api_base, azure_deployment=None):
     """Configure a new model or update an existing one."""
     try:
-        update_config(alias, model_name, provider, key, api_base)
+        update_config(alias, model_name, provider, key, api_base, azure_deployment)
     except click.Abort:
         click.echo("Configuration cancelled.")
     except Exception as e:
@@ -92,6 +97,8 @@ def delete_config_command(alias):
         click.echo(f"  Provider: {model_config['provider']}")
         click.echo(f"  API Key: {masked_key}")
         click.echo(f"  API Base: {model_config['api_base']}")
+        if model_config['provider'] == 'azure-openai':
+            click.echo(f"  Azure Deployment: {model_config.get('azure_deployment', 'Not specified')}")
 
         if click.confirm("Are you sure you want to delete this configuration?"):
             del config['models'][alias]
@@ -117,4 +124,6 @@ def show_models_command():
         click.echo(f"  Provider: {model_config['provider']}")
         click.echo(f"  API Key: {masked_key}")
         click.echo(f"  API Base: {model_config['api_base']}")
+        if model_config['provider'] == 'azure-openai':
+            click.echo(f"  Azure Deployment: {model_config.get('azure_deployment', 'Not specified')}")
         click.echo("")  # Blank line for better readability

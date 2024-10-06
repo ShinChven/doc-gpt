@@ -1,4 +1,4 @@
-from openai import OpenAI
+from openai import OpenAI, AzureOpenAI
 import requests
 
 class AIClient:
@@ -20,8 +20,12 @@ class AIClient:
         if not provider:
             raise ValueError(f"Provider not specified for model alias '{model_alias}'")
         
+        print(f"Requesting content from model '{model_alias}' using provider '{provider}'")
+
         if provider == 'openai':
             return self._openai_request(messages, model_config)
+        elif provider == 'azure-openai':
+            return self._azure_openai_request(messages, model_config)
         elif provider == 'ollama':
             return self._ollama_request(messages, model_config)
         else:
@@ -40,6 +44,29 @@ class AIClient:
                 model=model_config['model_name'],
                 messages=messages,
                 stream=False)
+        return response.choices[0].message.content
+
+    def _azure_openai_request(self, messages, model_config):
+        if 'key' not in model_config or not model_config['key']:
+            raise ValueError("API key not provided for Azure OpenAI")
+        
+        if 'api_base' not in model_config or not model_config['api_base']:
+            raise ValueError("API base URL not provided for Azure OpenAI")
+        
+        if 'model_name' not in model_config or not model_config['model_name']:
+            raise ValueError("Azure deployment name not provided for Azure OpenAI, please set it as 'model_name' in the configuration")
+
+        azureOpenAIClient = AzureOpenAI(
+            api_key=model_config['key'],
+            api_version="2023-07-01-preview",
+            azure_endpoint=model_config['api_base']
+        )
+
+        response = azureOpenAIClient.chat.completions.create(
+            model=model_config['model_name'],
+            messages=messages,
+            stream=False
+        )
         return response.choices[0].message.content
 
     def _ollama_request(self, messages, model_config):
