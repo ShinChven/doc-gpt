@@ -1,3 +1,4 @@
+import json
 from openai import OpenAI, AzureOpenAI
 import requests
 import anthropic
@@ -78,7 +79,7 @@ class AIClient:
         return response.choices[0].message.content
 
     def _ollama_request(self, messages, model_config, max_tokens):
-        api_base = model_config.get('api_base')
+        api_base = model_config.get('api_base', 'http://localhost:11434')
         if not api_base:
             api_base = 'http://localhost:11434'
         api_base += '/api/chat'
@@ -86,14 +87,33 @@ class AIClient:
         request_data = {
             "model": model_config['model_name'],
             "messages": messages,
-            "stream": False
+            "temperature": model_config.get('temperature', 0.7)
         }
         if max_tokens:
             request_data["options"] = {"num_predict": max_tokens}
+        
+        try:
+            response = requests.post(api_base, json=request_data)
+            response.raise_for_status()
+            content = response.content.decode('utf-8')
+            full_response = ""
+            for line in content.strip().split('\n'):
+                try:
+                    json_obj = json.loads(line)
+                    if 'message' in json_obj and 'content' in json_obj['message']:
+                        full_response += json_obj['message']['content']
+                    if json_obj.get('done', False):
+                        break
+                except json.JSONDecodeError:
+                    print(f"Error decoding JSON line: {line}")
+                    continue
+            return full_response.strip()
 
-        response = requests.post(api_base, json=request_data)
-        response.raise_for_status()
-        return response.json()['message']['content']
+        except requests.exceptions.RequestException as e:
+            print(f"Error in Ollama API request: {e}")
+            if response is not None:
+                print(f"Response content: {response.content}")
+            raise
 
     def _claude_request(self, messages, model_config, max_tokens):
         if 'key' not in model_config or not model_config['key']:
