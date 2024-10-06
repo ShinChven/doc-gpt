@@ -41,7 +41,7 @@ def set_default(alias):
 
 @main.command()
 @click.option("-a", "--alias", required=False, help="Model alias to delete")
-def delete_config(alias):
+def delete_model(alias):
     """Delete a model configuration by alias."""
     delete_config_command(alias)
 
@@ -50,9 +50,6 @@ def delete_config(alias):
 def show_models():
     """Show all models with their provider and masked key."""
     show_models_command()
-
-
-
 
 @main.command()
 @click.option(
