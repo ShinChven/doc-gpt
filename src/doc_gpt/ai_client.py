@@ -87,7 +87,6 @@ class AIClient:
         request_data = {
             "model": model_config['model_name'],
             "messages": messages,
-            "temperature": model_config.get('temperature', 0.7)
         }
         if max_tokens:
             request_data["options"] = {"num_predict": max_tokens}
