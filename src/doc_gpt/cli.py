@@ -30,7 +30,7 @@ def config(alias, model_name, provider, key, api_base):
 
 
 @main.command()
-@click.argument("alias")
+@click.option("-a", "--alias", help="Model alias to set as default")
 def set_default(alias):
     """Set the default model."""
     try:
@@ -40,7 +40,7 @@ def set_default(alias):
 
 
 @main.command()
-@click.argument("alias")
+@click.option("-a", "--alias", required=False, help="Model alias to delete")
 def delete_config(alias):
     """Delete a model configuration by alias."""
     delete_config_command(alias)

@@ -10,8 +10,6 @@ from prompt_toolkit.layout.containers import Window
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
 
-
-
 CONFIG_FILE = Path.home() / '.doc-gpt' / 'config.json'
 
 def get_config():
@@ -107,6 +105,13 @@ def update_config(alias, model_name, provider, key, api_base):
 
 def set_default_model(alias):
     config = get_config()
+    if not alias:
+        available_aliases = list(config['models'].keys())
+        if not available_aliases:
+            raise click.ClickException("No models available to set as default.")
+        print("Select a model alias to set as default (use up/down arrows and press Enter to select):")
+        alias = select_from_list(available_aliases)
+
     if alias not in config['models']:
         raise click.ClickException(f"Error: Model alias '{alias}' not found in configuration.")
     
@@ -144,6 +149,15 @@ def config_command(alias, model_name, provider, key, api_base):
 def delete_config_command(alias):
     """Delete a model configuration by alias."""
     config = get_config()
+    
+    if not alias:
+        available_aliases = list(config['models'].keys())
+        if not available_aliases:
+            click.echo("No models available to delete.", err=True)
+            return
+        print("Select a model alias to delete (use up/down arrows and press Enter to select):")
+        alias = select_from_list(available_aliases)
+    
     if alias in config['models']:
         model_config = config['models'][alias]
 
