@@ -68,7 +68,7 @@ doc-gpt set-default MODEL_ALIAS
 To delete a model configuration:
 
 ```bash
-doc-gpt delete-config MODEL_ALIAS
+doc-gpt delete-model MODEL_ALIAS
 ```
 
 ### Showing All Configured Models
