@@ -81,7 +81,16 @@ doc-gpt show-models
 
 ### Generating Content
 
-To generate content with a configured model, use the following command:
+To generate content quickly, use the following simplified command:
+
+```bash
+doc-gpt g -i <INPUT_PATH_OR_URL>
+```
+
+This command reads the prompt from `prompt.md` in the current directory. If `prompt.md` doesn't exist, it will guide you to input a prompt.
+
+For more advanced options, use the following command:
+
 
 ```
 doc-gpt g --input <INPUT_PATH_OR_URL> --output <OUTPUT_FILE> --model_alias <MODEL_ALIAS> --prompt <PROMPT_FILE> --instructions <INSTRUCTIONS_FILE> --batch_size <BATCH_SIZE>
@@ -98,6 +107,7 @@ doc-gpt g --input <INPUT_PATH_OR_URL> --output <OUTPUT_FILE> --model_alias <MODE
 If a prompt file is not provided using the `--prompt` option, doc-gpt will automatically look for a file named `prompt.md` in the current working directory and use it as the default prompt. This feature allows you to maintain a consistent prompt across multiple runs without explicitly specifying it each time.
 
 If neither a prompt file is provided nor a `prompt.md` file exists in the current working directory, you'll be prompted to enter the prompt manually.
+
 
 ## Supported File Types and URLs
 
