@@ -1,13 +1,14 @@
 # doc-gpt
 
-doc-gpt is a powerful Python CLI tool designed to process document files (PDF, DOCX, PPTX, TXT, MD) using Large Language Models (LLMs). It offers a flexible and efficient way to generate content, manage model configurations, and process multiple files asynchronously.
+doc-gpt is a powerful Python CLI tool designed to process document files (PDF, DOCX, PPTX, TXT, MD) and URLs using Large Language Models (LLMs). It offers a flexible and efficient way to generate content, manage model configurations, and process multiple files asynchronously.
 
 ## Features
 
 - Support for multiple file types: PDF, DOCX, PPTX, TXT, MD
+- URL processing and content scraping
 - Configurable model settings with multiple providers (e.g., OpenAI, Azure OpenAI, Ollama, Claude, Google Generative AI)
 - Batch processing of files with customizable batch size
-- Flexible input options: process single files or entire directories
+- Flexible input options: process single files, entire directories, or URLs
 - Customizable prompts and system instructions
 - **Automatic loading of default prompt from prompt.md in the current working directory**
 
@@ -74,11 +75,11 @@ doc-gpt show-models
 To generate content with a configured model, use the following command:
 
 ```
-doc-gpt g --input <INPUT_PATH> --output <OUTPUT_FILE> --model_alias <MODEL_ALIAS> --prompt <PROMPT_FILE> --instructions <INSTRUCTIONS_FILE> --batch_size <BATCH_SIZE>
+doc-gpt g --input <INPUT_PATH_OR_URL> --output <OUTPUT_FILE> --model_alias <MODEL_ALIAS> --prompt <PROMPT_FILE> --instructions <INSTRUCTIONS_FILE> --batch_size <BATCH_SIZE>
 ```
 
-- `--input` or `-i`: Specify the path to the input file or directory (mandatory)
-- `--output` or `-o`: Designate the path for the output file (optional, default: input_file_name.doc-gpt.md)
+- `--input` or `-i`: Specify the path to the input file, directory, or URL (mandatory)
+- `--output` or `-o`: Designate the path for the output file (optional, default: input_file_name.doc-gpt.md or url_based_filename.doc-gpt.md)
 - `--model_alias` or `-m`: Indicate the alias for the model (optional, defaults to the pre-set model)
 - `--prompt` or `-p`: Provide the path to the prompt file (optional)
 - `--instructions` or `-s`: Specify the path to the system instructions file (optional)
@@ -89,7 +90,7 @@ If a prompt file is not provided using the `--prompt` option, doc-gpt will autom
 
 If neither a prompt file is provided nor a `prompt.md` file exists in the current working directory, you'll be prompted to enter the prompt manually.
 
-## Supported File Types
+## Supported File Types and URLs
 
 doc-gpt supports the following file types:
 - PDF (.pdf)
@@ -99,6 +100,19 @@ doc-gpt supports the following file types:
 - Markdown (.md)
 
 When processing a directory, doc-gpt will process all supported files in the directory.
+
+doc-gpt also supports processing URLs. When a URL is provided as input, the tool will scrape the content from the webpage and process it.
+
+### URL Processing
+
+When processing a URL, doc-gpt converts the URL into a valid filename for the output. The conversion process:
+1. Removes the protocol (http:// or https://)
+2. Replaces invalid filename characters (including '=') with underscores
+3. Replaces slashes with hyphens
+4. Limits the filename length to 200 characters
+5. Appends ".doc-gpt.md" to the end of the filename
+
+For example, the URL "https://www.example.com/some/long/path?param=value" would be converted to a filename like "www.example.com-some-long-path_param_value.doc-gpt.md".
 
 ## Batch Processing
 

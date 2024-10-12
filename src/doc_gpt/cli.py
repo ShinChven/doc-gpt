@@ -1,7 +1,7 @@
 from pathlib import Path
-
 import click
 import threading
+import re
 
 from .config import (
     config_command,
@@ -9,14 +9,11 @@ from .config import (
     set_default_model,
     show_models_command,
 )
-from .utils import process_task
-
-
+from .utils import process_task, is_valid_url
 
 @click.group()
 def main():
     pass
-
 
 @main.command()
 @click.option("-a", "--alias", help="Model alias")
@@ -28,7 +25,6 @@ def config(alias, model_name, provider, key, api_base):
     """Configure a new model or update an existing one."""
     config_command(alias, model_name, provider, key, api_base)
 
-
 @main.command()
 @click.option("-a", "--alias", help="Model alias to set as default")
 def set_default(alias):
@@ -38,13 +34,11 @@ def set_default(alias):
     except click.ClickException as e:
         click.echo(str(e), err=True)
 
-
 @main.command()
 @click.option("-a", "--alias", required=False, help="Model alias to delete")
 def delete_model(alias):
     """Delete a model configuration by alias."""
     delete_config_command(alias)
-
 
 @main.command()
 def show_models():
@@ -53,7 +47,7 @@ def show_models():
 
 @main.command()
 @click.option(
-    "-i", "--input", "input_path", required=True, help="Input file or directory"
+    "-i", "--input", "input_path", required=True, help="Input file, directory, or URL"
 )
 @click.option("-o", "--output", "output_file", help="Output file")
 @click.option("-m", "--model_alias", help="Model alias")
@@ -86,40 +80,44 @@ def g(input_path, output_file, model_alias, prompt_file, instructions_file, batc
         process_task(file, output_file, model_alias, prompt_file, instructions_file, write_prompt, max_tokens)
 
     try:
-        path = Path(input_path)
-        files = []
-
-        if path.is_file() and path.suffix in {".pdf", ".docx", ".txt", ".md", ".pptx"}:
-            files.append(path)
-        elif path.is_dir():
-            files.extend(
-                file
-                for file in path.iterdir()
-                if file.is_file()
-                and file.suffix in {".pdf", ".docx", ".txt", ".md", ".pptx"}
-            )
+        if is_valid_url(input_path):
+            # If input is a URL, process it directly
+            process_task(input_path, output_file, model_alias, prompt_file, instructions_file, write_prompt, max_tokens)
         else:
-            click.echo(
-                "Unsupported input type or no valid files in directory.", err=True
-            )
-            return
+            path = Path(input_path)
+            files = []
 
-        if not files:
-            click.echo("No valid files found.", err=True)
-            return
+            if path.is_file() and path.suffix in {".pdf", ".docx", ".txt", ".md", ".pptx"}:
+                files.append(path)
+            elif path.is_dir():
+                files.extend(
+                    file
+                    for file in path.iterdir()
+                    if file.is_file()
+                    and file.suffix in {".pdf", ".docx", ".txt", ".md", ".pptx"}
+                )
+            else:
+                click.echo(
+                    "Unsupported input type or no valid files in directory.", err=True
+                )
+                return
 
-        # Process the files in batches asynchronously
-        for i in range(0, len(files), batch_size):
-            batch_files = files[i : i + batch_size]
-            threads = []
+            if not files:
+                click.echo("No valid files found.", err=True)
+                return
 
-            for file in batch_files:
-                thread = threading.Thread(target=process_file, args=(file,))
-                threads.append(thread)
-                thread.start()
+            # Process the files in batches asynchronously
+            for i in range(0, len(files), batch_size):
+                batch_files = files[i : i + batch_size]
+                threads = []
 
-            for thread in threads:
-                thread.join()
+                for file in batch_files:
+                    thread = threading.Thread(target=process_file, args=(file,))
+                    threads.append(thread)
+                    thread.start()
+
+                for thread in threads:
+                    thread.join()
 
     except click.UsageError as e:
         click.echo(f"Usage error: {str(e)}", err=True)
@@ -127,7 +125,6 @@ def g(input_path, output_file, model_alias, prompt_file, instructions_file, batc
         click.echo(str(e), err=True)
     except Exception as e:
         click.echo(f"An error occurred: {str(e)}", err=True)
-
 
 if __name__ == "__main__":
     main()

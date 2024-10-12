@@ -3,11 +3,40 @@ import PyPDF2
 import click
 from docx import Document
 from pptx import Presentation
+import re
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 
 from doc_gpt.config import get_config
 from .ai_client import AIClient
 
+def is_valid_url(url):
+    url_pattern = re.compile(
+        r'^https?://'  # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain...
+        r'localhost|'  # localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+        r'(?::\d+)?'  # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+    return url_pattern.match(url) is not None
+
+def scrape_url(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        # Extract text from p, h1-h6, li tags
+        text = ' '.join([tag.get_text() for tag in soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li'])])
+        return text
+    except requests.RequestException as e:
+        print(f"Error scraping URL {url}: {str(e)}")
+        return ""
+
 def process_input(input_path):
+    if is_valid_url(input_path):
+        return scrape_url(input_path)
+    
     input_path = Path(input_path)
     
     if not input_path.exists():
@@ -60,8 +89,25 @@ def process_pptx(file_path):
                 text_content.append(shape.text)
     return "\n".join(text_content)
 
+def url_to_valid_filename(url):
+    # Remove the protocol (http:// or https://)
+    url = re.sub(r'^https?://', '', url)
+    # Replace invalid filename characters with underscores
+    url = re.sub(r'[\\/*?:"<>|=]', '_', url)
+    # Replace slashes with hyphens
+    url = url.replace('/', '-')
+    # Limit the filename length (adjust as needed)
+    max_length = 200
+    if len(url) > max_length:
+        url = url[:max_length]
+    return f"{url}.doc-gpt.md"
+
 def write_output(content, output, input_file):
-    input_path = Path(input_file)
+    if is_valid_url(input_file):
+        input_path = Path(url_to_valid_filename(input_file))
+    else:
+        input_path = Path(input_file)
+    
     output = Path(output or Path.cwd())
     
     # Create the output directory if it's a new path with no extension
@@ -70,20 +116,20 @@ def write_output(content, output, input_file):
 
     # If output is a directory, set the output to a file within that directory
     if output.is_dir():
-        output = output / f"{input_path.stem}.doc-gpt.md"
+        output = output / input_path.name
         
     # Create the output file if it doesn't exist
     if not output.exists():
         output.touch()
 
     # Write or append content to the output file
-    with open(output, 'a', encoding='utf-8') as f:
+    with open(str(output), 'a', encoding='utf-8') as f:
         if output.stat().st_size > 0:
             file_divider = f"\n------\n\n"
             f.write(file_divider)
         f.write(content + "\n")
     
-    print(f"Output written to {output}")
+    print(f"Output written to {str(output)}")
 
 def process_task(input_file, output_file, model_alias, prompt_file, instructions_file, write_prompt=False, max_tokens=None):
     try:
@@ -95,7 +141,7 @@ def process_task(input_file, output_file, model_alias, prompt_file, instructions
         else:
             default_prompt_file = Path.cwd() / 'prompt.md'
             if default_prompt_file.exists():
-                prompt = process_input(default_prompt_file)
+                prompt = process_input(str(default_prompt_file))
             else:
                 prompt = click.prompt("Enter your prompt", type=str)
 
@@ -108,7 +154,7 @@ def process_task(input_file, output_file, model_alias, prompt_file, instructions
         else:
             default_instructions_file = Path.cwd() / 'instructions.md'
             if default_instructions_file.exists():
-                instructions = process_input(default_instructions_file)
+                instructions = process_input(str(default_instructions_file))
 
         messages = []
         if instructions:
