@@ -32,7 +32,16 @@ doc-gpt provides several commands to manage configurations and generate content.
 
 ### Configuring a Model
 
-To configure a new model or update an existing one:
+For a step-by-step guided configuration, use the following command:
+
+```bash
+doc-gpt config
+```
+
+This command will prompt you for each configuration setting, making the process easier and more user-friendly.
+
+
+To configure a new model or update an existing one using a single command (all options are mandatory):
 
 ```bash
 doc-gpt config --alias MODEL_ALIAS --model_name MODEL_NAME --provider PROVIDER --key API_KEY --api_base API_BASE
@@ -44,7 +53,7 @@ doc-gpt config --alias MODEL_ALIAS --model_name MODEL_NAME --provider PROVIDER -
 - `--key`: The API key (optional, depending on the provider)
 - `--api_base`: The API base URL (optional, defaults to https://api.anthropic.com for Claude)
 
-If you don't provide all options, you'll be prompted to enter the missing information.
+If you don't provide all options using the single command method, you'll be prompted to enter the missing information.
 
 ### Setting the Default Model
 
