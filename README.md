@@ -109,6 +109,18 @@ If a prompt file is not provided using the `--prompt` option, doc-gpt will autom
 If neither a prompt file is provided nor a `prompt.md` file exists in the current working directory, you'll be prompted to enter the prompt manually.
 
 
+### Extracting Text
+
+To extract text from a document or directory of documents:
+
+```bash
+doc-gpt text <input_path> [OPTIONS]
+```
+
+- `<input_path>`: Specify the path to the input file or directory (mandatory).
+- `--output`: Specify the path for the output file (optional, defaults to `output.doc-gpt.txt` in the current working directory). If no output file is specified, the output will be written to a file with the same name as the input file but with the extension `.doc-gpt.txt`.
+
+
 ## Supported File Types and URLs
 
 doc-gpt supports the following file types:

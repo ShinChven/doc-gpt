@@ -9,7 +9,7 @@ from .config import (
     set_default_model,
     show_models_command,
 )
-from .utils import process_task, is_valid_url
+from .utils import process_task, is_valid_url, process_input
 
 @click.group()
 def main():
@@ -125,6 +125,21 @@ def g(input_path, output_file, model_alias, prompt_file, instructions_file, batc
         click.echo(str(e), err=True)
     except Exception as e:
         click.echo(f"An error occurred: {str(e)}", err=True)
+
+
+@main.command()
+@click.argument("input_path", required=True, type=click.Path(exists=True))
+@click.option("-o", "--output", "output_file", default=f"{Path.cwd()}/output.doc-gpt.txt", help="Output file (default: output.doc-gpt.txt)")
+def text(input_path, output_file):
+    """Extract text from document and output to .doc-gpt.txt file."""
+    try:
+        extracted_text = process_input(input_path)
+        with open(output_file, "w", encoding="utf-8") as f:
+            f.write(extracted_text)
+        click.echo(f"Text extracted and saved to {output_file}")
+    except Exception as e:
+        click.echo(f"An error occurred: {str(e)}", err=True)
+
 
 if __name__ == "__main__":
     main()
