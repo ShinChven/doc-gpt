@@ -118,7 +118,7 @@ doc-gpt text <input_path> [OPTIONS]
 ```
 
 - `<input_path>`: Specify the path to the input file or directory (mandatory).
-- `--output`: Specify the path for the output file (optional, defaults to `output.doc-gpt.txt` in the current working directory). If no output file is specified, the output will be written to a file with the same name as the input file but with the extension `.doc-gpt.txt`.
+- `--output`: Specify the output file path (optional). If omitted, the output will be written to a file with the same name as the input file, but with the extension `.doc-gpt.txt`.
 
 
 ## Supported File Types and URLs
