@@ -76,8 +76,10 @@ def show_models():
 def g(input_path, output_file, model_alias, prompt_file, instructions_file, batch_size, write_prompt, max_tokens):
     """Generate content using the specified model and input."""
 
-    def process_file(file):
-        process_task(str(file), output_file, model_alias, prompt_file, instructions_file, write_prompt, max_tokens)
+    def process_file(file, output_file_param):
+        if output_file_param is None:
+          output_file_param = str(Path.cwd() / (file.stem + ".doc-gpt.md"))
+        process_task(str(file), output_file_param, model_alias, prompt_file, instructions_file, write_prompt, max_tokens)
 
     try:
         if is_valid_url(input_path):
@@ -112,7 +114,7 @@ def g(input_path, output_file, model_alias, prompt_file, instructions_file, batc
                 threads = []
 
                 for file in batch_files:
-                    thread = threading.Thread(target=process_file, args=(file,))
+                    thread = threading.Thread(target=process_file, args=(file, output_file))
                     threads.append(thread)
                     thread.start()
 
@@ -135,7 +137,7 @@ def text(input_path, output_file):
     try:
         input_path_obj = Path(input_path)
         if output_file is None:
-            output_file = str(input_path_obj.with_suffix(".doc-gpt.txt"))
+            output_file = str(Path.cwd() / (input_path_obj.stem + ".doc-gpt.txt")) # Changed this line
         extracted_text = process_input(input_path)
         with open(output_file, "w", encoding="utf-8") as f:
             f.write(extracted_text)
