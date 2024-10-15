@@ -77,7 +77,7 @@ def g(input_path, output_file, model_alias, prompt_file, instructions_file, batc
     """Generate content using the specified model and input."""
 
     def process_file(file):
-        process_task(file, output_file, model_alias, prompt_file, instructions_file, write_prompt, max_tokens)
+        process_task(str(file), output_file, model_alias, prompt_file, instructions_file, write_prompt, max_tokens)
 
     try:
         if is_valid_url(input_path):
