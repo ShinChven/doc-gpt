@@ -84,19 +84,18 @@ doc-gpt show-models
 To generate content quickly, use the following simplified command:
 
 ```bash
-doc-gpt g -i <INPUT_PATH_OR_URL>
+doc-gpt g <INPUT_PATH_OR_URL>
 ```
 
 This command reads the prompt from `prompt.md` in the current directory. If `prompt.md` doesn't exist, it will guide you to input a prompt.
 
 For more advanced options, use the following command:
 
-
 ```
-doc-gpt g --input <INPUT_PATH_OR_URL> --output <OUTPUT_FILE> --model_alias <MODEL_ALIAS> --prompt <PROMPT_FILE> --instructions <INSTRUCTIONS_FILE> --batch_size <BATCH_SIZE>
+doc-gpt g <INPUT_PATH_OR_URL> [OPTIONS]
 ```
 
-- `--input` or `-i`: Specify the path to the input file, directory, or URL (mandatory)
+Options:
 - `--output` or `-o`: Designate the path for the output file (optional, default: input_file_name.doc-gpt.md or url_based_filename.doc-gpt.md)
 - `--model_alias` or `-m`: Indicate the alias for the model (optional, defaults to the pre-set model)
 - `--prompt` or `-p`: Provide the path to the prompt file (optional)
@@ -108,6 +107,7 @@ If a prompt file is not provided using the `--prompt` option, doc-gpt will autom
 
 If neither a prompt file is provided nor a `prompt.md` file exists in the current working directory, you'll be prompted to enter the prompt manually.
 
+**Note:** The `g` command now accepts the input path or URL as a required argument, similar to the `text` command. You no longer need to use the `--input` or `-i` flag.
 
 ### Extracting Text
 

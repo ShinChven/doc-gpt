@@ -45,10 +45,8 @@ def show_models():
     """Show all models with their provider and masked key."""
     show_models_command()
 
-@main.command()
-@click.option(
-    "-i", "--input", "input_path", required=True, help="Input file, directory, or URL"
-)
+@main.command(help="Generate content using the specified model and input.")
+@click.argument("input_path", required=True, type=click.Path(exists=True))
 @click.option("-o", "--output", "output_file", help="Output file")
 @click.option("-m", "--model_alias", help="Model alias")
 @click.option("-p", "--prompt", "prompt_file", help="Prompt file")
@@ -129,7 +127,7 @@ def g(input_path, output_file, model_alias, prompt_file, instructions_file, batc
         click.echo(f"An error occurred: {str(e)}", err=True)
 
 
-@main.command()
+@main.command(help="Extract text from document and output to .doc-gpt.txt file.")
 @click.argument("input_path", required=True, type=click.Path(exists=True))
 @click.option("-o", "--output", "output_file", help="Output file")
 def text(input_path, output_file):
