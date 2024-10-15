@@ -129,10 +129,13 @@ def g(input_path, output_file, model_alias, prompt_file, instructions_file, batc
 
 @main.command()
 @click.argument("input_path", required=True, type=click.Path(exists=True))
-@click.option("-o", "--output", "output_file", default=f"{Path.cwd()}/output.doc-gpt.txt", help="Output file (default: output.doc-gpt.txt)")
+@click.option("-o", "--output", "output_file", help="Output file")
 def text(input_path, output_file):
     """Extract text from document and output to .doc-gpt.txt file."""
     try:
+        input_path_obj = Path(input_path)
+        if output_file is None:
+            output_file = str(input_path_obj.with_suffix(".doc-gpt.txt"))
         extracted_text = process_input(input_path)
         with open(output_file, "w", encoding="utf-8") as f:
             f.write(extracted_text)
