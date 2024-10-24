@@ -46,7 +46,7 @@ def show_models():
     show_models_command()
 
 @main.command(help="Generate content using the specified model and input.")
-@click.argument("input_path", required=True, type=click.Path(exists=True))
+@click.argument("input_path", required=True, type=click.Path(exists=False))
 @click.option("-o", "--output", "output_file", help="Output file")
 @click.option("-m", "--model_alias", help="Model alias")
 @click.option("-p", "--prompt", "prompt_file", help="Prompt file")
@@ -83,41 +83,46 @@ def g(input_path, output_file, model_alias, prompt_file, instructions_file, batc
         if is_valid_url(input_path):
             # If input is a URL, process it directly
             process_task(input_path, output_file, model_alias, prompt_file, instructions_file, write_prompt, max_tokens)
+            return
+
+        # For file paths, validate existence
+        path = Path(input_path)
+        if not path.exists():
+            click.echo(f"Error: Path '{input_path}' does not exist.", err=True)
+            return
+
+        files = []
+        if path.is_file() and path.suffix in {".pdf", ".docx", ".txt", ".md", ".pptx"}:
+            files.append(path)
+        elif path.is_dir():
+            files.extend(
+                file
+                for file in path.iterdir()
+                if file.is_file()
+                and file.suffix in {".pdf", ".docx", ".txt", ".md", ".pptx"}
+            )
         else:
-            path = Path(input_path)
-            files = []
+            click.echo(
+                "Unsupported input type or no valid files in directory.", err=True
+            )
+            return
 
-            if path.is_file() and path.suffix in {".pdf", ".docx", ".txt", ".md", ".pptx"}:
-                files.append(path)
-            elif path.is_dir():
-                files.extend(
-                    file
-                    for file in path.iterdir()
-                    if file.is_file()
-                    and file.suffix in {".pdf", ".docx", ".txt", ".md", ".pptx"}
-                )
-            else:
-                click.echo(
-                    "Unsupported input type or no valid files in directory.", err=True
-                )
-                return
+        if not files:
+            click.echo("No valid files found.", err=True)
+            return
 
-            if not files:
-                click.echo("No valid files found.", err=True)
-                return
+        # Process the files in batches asynchronously
+        for i in range(0, len(files), batch_size):
+            batch_files = files[i : i + batch_size]
+            threads = []
 
-            # Process the files in batches asynchronously
-            for i in range(0, len(files), batch_size):
-                batch_files = files[i : i + batch_size]
-                threads = []
+            for file in batch_files:
+                thread = threading.Thread(target=process_file, args=(file, output_file))
+                threads.append(thread)
+                thread.start()
 
-                for file in batch_files:
-                    thread = threading.Thread(target=process_file, args=(file, output_file))
-                    threads.append(thread)
-                    thread.start()
-
-                for thread in threads:
-                    thread.join()
+            for thread in threads:
+                thread.join()
 
     except click.UsageError as e:
         click.echo(f"Usage error: {str(e)}", err=True)
