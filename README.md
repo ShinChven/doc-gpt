@@ -1,3 +1,6 @@
+# **DEPRECATED**
+**This project is no longer actively maintained. It is recommended to use [google/gemini-cli](https://github.com/google-gemini/gemini-cli) instead.**
+
 # doc-gpt
 
 doc-gpt is a powerful Python CLI tool designed to process document files (PDF, DOCX, PPTX, TXT, MD) and URLs using Large Language Models (LLMs). It offers a flexible and efficient way to generate content, manage model configurations, and process multiple files asynchronously.
